@@ -318,7 +318,8 @@ flextable_au_color(mytab)
 ```{r, fig.width=4.5, fig.height=4.5}
 model <- "BUN_mg.dl ~ Treatment * Day + (1|Cow)"
 
-plotmeans1(data, model, ind_var)
+plotmeans1(data, model, ind_var) +
+scale_y_continuous(limits = c(0,18))
 ```
 
 
