@@ -1,0 +1,35 @@
+Package: autheme
+Title: Unofficial graphs and tables styling for Aarhus Uni and fast table and plotting for lmer results.
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Giulio",
+           family = "Giagnoni",
+           role = c("aut", "cre"),
+           email = "gigi@anis.au.dk",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Get nice and consistent graphs (ggplot2) and tables (flextable) with a style that suit Aarhus University theme. Also fast output for lmer (lme4) means (emmeans) as data frame or plot.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Depends:
+    scales,
+    ggplot2,
+    ggpubr,
+    flextable,
+    officer,
+    lme4,
+    emmeans,
+    lmerTest,
+    car,
+    multcomp,
+    qqplotr,
+    grid,
+    gridExtra,
+    R (>= 2.10)
+Encoding: UTF-8
+LazyData: true
+VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Suggests: 
+    rmarkdown,
+    knitr

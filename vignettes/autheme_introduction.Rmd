@@ -1,0 +1,342 @@
+---
+title: "autheme_introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{autheme_introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+This package has 2 aims: 
+
+- Get quickly pretty and consistent graphs (ggplot2) and tables (flextable) with a style that suit Aarhus University theme, including colors and fonts. 
+
+- Get quickly a table or grah display of the least square means (emmeans) and p values in table. Also get model diagnostic for linear mixed models.
+
+
+
+## Required packages
+```{r, message = FALSE, warning=FALSE}
+library(extrafont) # to get your device fonts
+
+library(autheme) 
+
+# packages only for the vignette
+
+library(dplyr)  # to summarize tables
+
+```
+
+## Install fonts 
+
+Before starting, install AU fonts on you device. The fonts can be found here:
+https://medarbejdere.au.dk/en/administration/communication/guidelines/guidelinesforfonts/downloadfonts/browse
+
+
+Then import the fonts on R, this has to be done only once.
+```{r}
+# install.packages('extrafont')
+# library(extrafont)
+# font_import()
+```
+
+
+```{r, include=FALSE}
+windowsFonts("AU Passata" = windowsFont("AU Passata"))
+windowsFonts("AU Passata Light" = windowsFont("AU Passata Light"))
+```
+
+
+
+## Install autheme
+
+Directly from Github:
+```{r}
+# devtools::install_github("giuliogiagnoni/autheme")
+```
+
+Alternatively, download the folder and install: 
+```{r}
+# install.packages("file_path/file_name.file_extension")
+```
+
+# Colors
+
+Palettes from https://medarbejdere.au.dk/en/administration/communication/guidelines/guidelinesforcolours/browse
+
+
+## All colors (full)
+```{r, fig.width = 9, fig.height=5}
+show_col(au_pal[["full"]])
+```
+
+:::: {style="display: flex;"}
+::: {}
+## Light colors (light)
+```{r}
+show_col(au_pal[["light"]])
+```
+:::
+::: {}
+## Dark colors (dark)
+```{r}
+show_col(au_pal[["dark"]])
+```
+:::
+::::
+
+:::: {style="display: flex;"}
+::: {}
+## Custom set 1: 4 colors (customset1.4)
+```{r}
+show_col(au_pal[["customset1.4"]])
+```
+:::
+::: {}
+## Custom set 2: 5 colors (customset2.5)
+```{r}
+show_col(au_pal[["customset2.5"]])
+```
+:::
+::::
+
+:::: {style="display: flex;"}
+::: {}
+## Custom set 3: 6 colors (customset3.6)
+```{r}
+show_col(au_pal[["customset3.6"]])
+```
+:::
+::: {}
+## Custom set 4: 6 colors (customset4.6)
+```{r}
+show_col(au_pal[["customset4.6"]])
+```
+:::
+::::
+
+## Office themes
+
+11 AU theme for office are present in the package, only 1 color out of 7 changes between the theme but they can be named as follow: "au_pal_blue", "au_pal_purple", ... , "au_pal_black", "au_pal_rainbow"
+
+## Fading colors
+If you wan to fade a color, or a set of colors, this can be easily achieve by using the function alpha from the scales package.
+```{r}
+# library(scales)
+# alpha(color, alpha = 0-1)
+```
+
+
+# Scales
+The palette can be use with the scale_color_au or scale_fill_au by providing the argumennts palette, as in the example:
+
+```{r}
+# scale_color_au(palette = "full)
+```
+
+Is possible to fade the color by adding the argument alpha (0-1), as in the example:
+```{r}
+# scale_color_au(palette = "full, alpha = 0.5)
+```
+
+Is also possible to create the scale through scale_color_manual or scale_fill manual, by providing the vector of colors (au_pal_full, au_pal_light, au_pal_dark, ...), as in these two examples:
+```{r}
+# scale_color_manual(values = au_pal_full) or 
+# scale_color_manual(values = au_pal[["full"]])
+```
+
+
+
+# Themes
+The themes available are the same as the standard ggplot theme, with some modification to fit AU style.
+There are two version for each theme, one with black and one AU blue text and lines. 
+
+:::: {style="display: flex;"}
+::: {}
+### theme_au_classic()
+```{r, fig.width = 4.5}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+  geom_point(size = 2) +
+ scale_color_au(palette = "customset1.4") +
+  theme_au_classic()
+```
+:::
+::: {}
+### theme_au_classic_col()
+```{r, fig.width = 4.5}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+  geom_point(size = 2) +
+  scale_color_au(palette = "customset1.4") +
+  theme_au_classic_col()
+```
+:::
+::::
+
+:::: {style="display: flex;"}
+::: {}
+### theme_au_bw()
+```{r, fig.width = 4.5}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+  geom_point(size = 2) +
+  scale_color_au(palette = "customset1.4") +
+  theme_au_bw()
+```
+:::
+::: {}
+### theme_au_bw_col()
+```{r, fig.width = 4.5}
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+  geom_point(size = 2) +
+  scale_color_au(palette = "customset1.4") +
+  theme_au_bw_col()
+```
+:::
+::::
+
+## Boxplots
+
+:::: {style="display: flex;"}
+::: {}
+### theme_au_minimal()
+```{r, fig.width = 4.5}
+ggplot(iris, aes(Species, Sepal.Width, fill = Species)) +
+  geom_boxplot() +
+  scale_fill_au(palette = "customset1.4") +
+  theme_au_minimal()
+```
+:::
+::: {}
+### theme_au_minimal_col()
+```{r, fig.width = 4.5}
+ggplot(iris, aes(Species, Sepal.Width, fill = Species)) +
+  geom_boxplot() +
+  scale_fill_au(palette = "customset1.4") +
+  theme_au_minimal_col()
+```
+:::
+::::
+
+
+## Facets
+
+:::: {style="display: flex;"}
+::: {}
+### theme_AU()
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) +
+  geom_point(size = 2) +
+  facet_wrap(~ Species) +
+  theme_au_void()
+```
+:::
+::: {}
+### theme_AU_color()
+```{r}
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) +
+  geom_point(size = 2) +
+  facet_wrap(~ Species) +
+  theme_au_void_col()
+```
+:::
+::::
+
+
+
+
+# Tables
+
+
+### flextable_au_tidy()
+```{r}
+flextable_au_tidy(iris %>% group_by(Species) %>%
+             summarize(Mean_Sepal.Length = mean(Sepal.Length),
+                       SD_Sepal.Length = sd(Sepal.Length)))
+```
+
+### flextable_au_color()
+```{r}
+flextable_au_color(iris %>% group_by(Species) %>%
+             summarize(Mean_Sepal.Length = mean(Sepal.Length),
+                       SD_Sepal.Length = sd(Sepal.Length)))
+```
+
+
+
+
+# Model outputs
+
+I include in the package a dataset publicly available (find information in data-raw/Nakajima2021.R). This data set is just used as an example, none of the statistic showed here should be consider relevant.
+
+
+## Model diagnostic
+```{r}
+data <- Nakajima2021_bloodparameters
+data <- data %>% dplyr::rename(Day =  "Day after the start of grazing (Day 0)",
+                                                       Cow = "Individual number")
+
+# set the order of the independent variables, these were already like this they go in alphabetic order
+data$Treatment <- factor(data$Treatment, c("Confinement", "Grazing"))
+
+# set model and independent variable of interest
+model <- "Treatment * Day + (1|Cow)"
+ind_var <- "Treatment"
+  
+# just some cleaning of this data set
+colnames(data) <-  sub("\r\n", "", colnames(data))
+colnames(data) <-  sub(" \r\n", "", colnames(data))
+colnames(data) <-  gsub(" ", "", colnames(data))
+
+colnames(data) <-  sub("\\(", "_", colnames(data))
+colnames(data) <-  sub("\\)", "", colnames(data))
+colnames(data) <-  gsub("/", ".", colnames(data))
+
+dep_var <- names(data)[22:30]
+```
+
+
+```{r, fig.width = 9, fig.height=9}
+lmerdiagnostic(data, model, ind_var, dep_var[1])
+```
+
+## Emmeans table
+
+Fast table output as data frame. Consider if you get some working to got back to the diagnostic of the model.
+```{r}
+dep_var <- rev(names(data)[22:30])
+
+mytab <- lmertableloop(data, model, ind_var, dep_var, p = "std1", s = 3)
+  
+mytab
+
+flextable_au_color(mytab)
+```
+
+## Emmeans plot
+
+```{r, fig.width=4.5, fig.height=4.5}
+model <- "BUN_mg.dl ~ Treatment * Day + (1|Cow)"
+
+plotmeans1(data, model, ind_var)
+```
+
+
+
+
+
+# Troubleshooting
+
+## Legend
+### Unwanted legend
+```{r}
+# guides(fill/color/shape=FALSE) +
+```
+
+### Out of margins
+This can be easily fixed by spreading the legend on multiple rows
+```{r}
+#   guides(color = guide_legend(nrow = 2)) +
+```
+
+
