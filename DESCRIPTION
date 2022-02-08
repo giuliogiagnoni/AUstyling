@@ -21,6 +21,7 @@ Depends:
     lmerTest,
     car,
     multcomp,
+    dplyr,
     qqplotr,
     grid,
     gridExtra,

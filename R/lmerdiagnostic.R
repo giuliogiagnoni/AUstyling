@@ -1,3 +1,11 @@
+#' lmerdiagnostic
+#'
+#' @param d a data frame.
+#' @param m a lmer model i.e "tr + p + (1|a)".
+#' @param iv indepent variable of the model to compute the emmeans i.e. "tr".
+#' @param dv a vector with the dependent variable of interest i.e c("var1","var2","var3").
+#' @return A serie of tables and plots useful for model diagnostic of linear and linear mixed models.
+#'
 #' @export
 lmerdiagnostic <- function(d, m, iv, dv){
 
@@ -38,10 +46,11 @@ lmerdiagnostic <- function(d, m, iv, dv){
       labs(x = "Fitted", y = "Residuals") +
       theme_au_bw_col()
 
+    titlegrob <- grid::textGrob(i, gp=grid::gpar(fontsize=24))
 
-    print(grid.arrange(arrangeGrob(arrangeGrob(pval, randeff, heights = c(1,1), widths = c(1,2), ncol = 2,
-                                               top = textGrob(i, gp=grid::gpar(fontsize=20))),
+    print(grid.arrange(arrangeGrob(titlegrob,
+                                   arrangeGrob(pval, randeff, heights = c(1,1), widths = c(1,2), ncol = 2),
                                    shapirotab, bartletttab,
-                                   plotnorm, plotfitted, heights = c(1,1,1,4,4), ncol = 1)))
+                                   plotnorm, plotfitted, heights = c(2,3,3,3,5,5), ncol = 1)))
   }
 }

@@ -223,7 +223,6 @@ ggplot(iris, aes(Species, Sepal.Width, fill = Species)) +
 
 :::: {style="display: flex;"}
 ::: {}
-### theme_AU()
 ```{r}
 ggplot(iris, aes(Sepal.Length, Sepal.Width)) +
   geom_point(size = 2) +
@@ -232,7 +231,6 @@ ggplot(iris, aes(Sepal.Length, Sepal.Width)) +
 ```
 :::
 ::: {}
-### theme_AU_color()
 ```{r}
 ggplot(iris, aes(Sepal.Length, Sepal.Width)) +
   geom_point(size = 2) +
@@ -270,7 +268,7 @@ flextable_au_color(iris %>% group_by(Species) %>%
 I include in the package a dataset publicly available (find information in data-raw/Nakajima2021.R). This data set is just used as an example, none of the statistic showed here should be consider relevant.
 
 
-## Model diagnostic
+## lmerdiagnostic
 ```{r}
 data <- Nakajima2021_bloodparameters
 data <- data %>% dplyr::rename(Day =  "Day after the start of grazing (Day 0)",
@@ -300,33 +298,103 @@ dep_var <- names(data)[22:30]
 lmerdiagnostic(data, model, ind_var, dep_var[1])
 ```
 
-## Emmeans table
+## lmertableloop
 
-Fast table output as data frame. Consider if you get some working to got back to the diagnostic of the model.
+Fast table output as data frame (lmertableloop).
+
 ```{r}
+model <- "Treatment * Day + (1|Cow)"
+ind_var_m <- "Treatment"
+ind_var_p <- c("Treatment", "Day", "Treatment:Day")
+dep_var <- rev(names(data)[22:30])
+```
+
+
+```{r}
+mytab <- lmertableloop(data, model, ivm = ind_var_m, ivp = ind_var_p, dv = dep_var, p = "std1", s = 3, let = TRUE)
+
+flextable_au_tidy(mytab)
+```
+
+
+```{r}
+data$Day <- factor(data$Day, list("Day -13", "Day -4", "Day 7", "Day 22", "Day 35", "Day 51", "Day 63")) # order Day levels
+contr.list <- as.data.frame(t(contr.poly(7))) # create contrast list
+contr.list <- lapply(split(contr.list, row.names(contr.list)), unlist) # create contrast list
+contr.list <- contr.list[order(c(".L", ".Q", ".C", "^4", "^5", "^6"))]
+
+mytab <- lmertableloop(data, model, ivm = "Treatment", ivp = ind_var_p, dv = dep_var, p = "std1", s = 3, con = contr.list, ivc = "Day")
+
+flextable_au_tidy(mytab)
+```
+
+## plotmeans
+
+The function plot means can return:
+- the emmeans table with letters from Tukey's test 
+- the plot of the emmeans with SE errorbar (plt = TRUE)
+
+```{r}
+ind_var_m <- c("Treatment", "Day")
+model <- "Treatment * Day + (1|Cow)"
+
+head(plotmeans(data, model, iv = ind_var_m, ivp = "Treatment", dv = "BUN_mg.dl"))
+```
+
+
+```{r, fig.width = 4.5}
+plotmeans(data, model, iv = ind_var_m, ivp = "Treatment", dv = "BUN_mg.dl", plt = TRUE)
+```
+:::
+::: {}
+```{r, fig.width = 4.5}
+plotmeans(data, model, iv = ind_var_m, ivp = "Treatment", dv = "BUN_mg.dl", plt = "FULL")+
+  geom_col(aes(fill = Treatment)) +
+  scale_fill_manual(values = au_pal_customset1.4)
+```
+:::
+::::
+
+
+## VarCorrtableloop
+
+VarCorr return the standard deviation of the random and residual effects. With the VarCorrtableloop function you can get a data set with those standard deviation of multiple dependnt variable with only one function, as in the example: 
+
+```{r}
+model <- "Treatment * Day + (1|Cow)"
 dep_var <- rev(names(data)[22:30])
 
-mytab <- lmertableloop(data, model, ind_var, dep_var, p = "std1", s = 3)
-  
-mytab
-
-flextable_au_color(mytab)
+VarCorrtableloop(data, model, dep_var, s = 3, r = "effect")
 ```
 
-## Emmeans plot
+Where with s you can set the significant digits as:
+- '' return digits rounded to 2;
+- 'full' return the all digits returned from the original VarCorr function;
+- numbers between 1 and 6 will return the required number of significant digits.
 
-```{r, fig.width=4.5, fig.height=4.5}
-model <- "BUN_mg.dl ~ Treatment * Day + (1|Cow)"
+In addition you can set r as:
+- '' return all standard deviation of both random and residual effects;
+- 'residuals' or 'residual' or 'res' return only the standard deviation of the residuals;
+- 'effect' or 'eff' return only the standard deviation of the random effect.
 
-plotmeans1(data, model, ind_var) +
-scale_y_continuous(limits = c(0,18))
+
+## raneftableloop
+
+Return data frame with extracted random effect from lmer, for n dependent variables.
+
+```{r}
+model <- "Treatment * Day + (1|Cow)"
+dv <- names(data)[22:30]
+
+head(raneftableloop(data, model, dv))
 ```
-
 
 
 
 
 # Troubleshooting
+
+Please report issue :)
 
 ## Legend
 ### Unwanted legend
