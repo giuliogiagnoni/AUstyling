@@ -7,3 +7,4 @@ devtools::install_github("giuliogiagnoni/autheme",build_vignettes = TRUE, force 
 
 To see example vignette after installing run:
 browseVignettes("autheme")
+and open the html file.
