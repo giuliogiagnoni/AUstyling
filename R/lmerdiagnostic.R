@@ -34,18 +34,30 @@ lmerdiagnostic <- function(d, m, iv, dv){
     b$statistic <- formatC(as.numeric(b$statistic), digits = 4)
     bartletttab <- tableGrob(format(b))
 
-    plotnorm <- ggplot(mapping = aes(sample = residuals(lmer_results))) +
+      is_outlier <- function(x) {
+      return(x < quantile(x, 0.33) - 1.5 * IQR(x) | x > quantile(x, 0.66) + 1.5 * IQR(x))
+    }
+
+    outlierqqplot <- data.frame(sample = qqnorm(residuals(lmer_results))[1],
+                                theory = qqnorm(residuals(lmer_results))[2])
+
+    outlierqqplot$nrow <- row.names(outlierqqplot)
+    outlierqqplot$out <- ifelse(is_outlier(outlierqqplot$y), outlierqqplot$nrow, NA)
+    outlierqqplot$fitted <- fitted(lmer_results)
+
+    plotnorm <- ggplot() +
+      geom_point(outlierqqplot, mapping = aes(x = x, y = y), size = 2,color = "black") +
+      geom_text(outlierqqplot, mapping = aes(x = x, y = y, label = out), na.rm = TRUE, hjust = -0.3) +
       labs(x = "Theoretical quantiles", y = "Sample quantiles") +
-      stat_qq_point(size = 2,color = "black") +
-      stat_qq_line(color = au_pal_red[1]) +
       theme_au_bw_col()
 
-    plotfitted <- ggplot(mapping = aes(x = fitted(lmer_results), y = residuals(lmer_results))) +
+    plotfitted <- ggplot(outlierqqplot, aes(x = fitted, y = y)) +
       geom_point() +
       geom_hline(yintercept = 0, color = au_pal_red[1]) +
+      geom_text(aes(label = out), na.rm = TRUE, hjust = -0.3) +
       labs(x = "Fitted", y = "Residuals") +
       theme_au_bw_col()
-
+    
     titlegrob <- grid::textGrob(i, gp=grid::gpar(fontsize=24))
 
     print(grid.arrange(arrangeGrob(titlegrob,
