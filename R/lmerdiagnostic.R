@@ -60,9 +60,9 @@ lmerdiagnostic <- function(d, m, iv, dv){
 
     titlegrob <- grid::textGrob(i, gp=grid::gpar(fontsize=20))
 
-    print(grid.arrange(arrangeGrob(titlegrob,
+    grid.arrange(arrangeGrob(titlegrob,
                                    arrangeGrob(pval, randeff, heights = c(1,1), widths = c(1,2), ncol = 2),
                                    shapirotab, bartletttab,
-                                   plotnorm, plotfitted, heights = c(2,3,3,3,5,5), ncol = 1)))
+                                   plotnorm, plotfitted, heights = c(2,3,3,3,5,5), ncol = 1))
   }
 }
