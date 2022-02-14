@@ -295,6 +295,7 @@ dep_var <- names(data)[22:30]
 
 
 ```{r, fig.width = 9, fig.height=9}
+# fig.width and fig.width can avoid overlapping of plots and tables
 lmerdiagnostic(data, model, ind_var, dep_var[1])
 ```
 
