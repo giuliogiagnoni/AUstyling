@@ -2,7 +2,7 @@
 #'
 #' @param d a data frame.
 #' @param m a lmer model i.e "tr + p + (1|a)".
-#' @param iv indepent variable of the model to compute the emmeans i.e. "tr".
+#' @param iv indepent variable which anova p-value will be displayed i.e. "tr" or c("tr", "p"), the first one will be used to test homogeinity
 #' @param dv a vector with the dependent variable of interest i.e c("var1","var2","var3").
 #' @return A serie of tables and plots useful for model diagnostic of linear and linear mixed models.
 #'
@@ -29,17 +29,17 @@ lmerdiagnostic <- function(d, m, iv, dv){
     a$statistic <- formatC(as.numeric(a$statistic), digits = 4)
     shapirotab <- tableGrob(format(a))
 
-    b <- as.data.frame(t(do.call(rbind, bartlett.test(as.formula(paste(i, iv, sep = "~")), data = d))))
+    b <- as.data.frame(t(do.call(rbind, bartlett.test(as.formula(paste(i, iv[1], sep = "~")), data = d))))
     b$p.value <- formatC(as.numeric(b$p.value), digits = 4)
     b$statistic <- formatC(as.numeric(b$statistic), digits = 4)
     bartletttab <- tableGrob(format(b))
 
-      is_outlier <- function(x) {
+    is_outlier <- function(x) {
       return(x < quantile(x, 0.33) - 1.5 * IQR(x) | x > quantile(x, 0.66) + 1.5 * IQR(x))
     }
 
-    outlierqqplot <- data.frame(sample = qqnorm(residuals(lmer_results))[1],
-                                theory = qqnorm(residuals(lmer_results))[2])
+    outlierqqplot <- data.frame(sample = qqnorm(residuals(lmer_results), plot.it = FALSE)[1],
+                                theory = qqnorm(residuals(lmer_results), plot.it = FALSE)[2])
 
     outlierqqplot$nrow <- row.names(outlierqqplot)
     outlierqqplot$out <- ifelse(is_outlier(outlierqqplot$y), outlierqqplot$nrow, NA)
@@ -57,8 +57,8 @@ lmerdiagnostic <- function(d, m, iv, dv){
       geom_text(aes(label = out), na.rm = TRUE, hjust = -0.3) +
       labs(x = "Fitted", y = "Residuals") +
       theme_au_bw_col()
-    
-    titlegrob <- grid::textGrob(i, gp=grid::gpar(fontsize=24))
+
+    titlegrob <- grid::textGrob(i, gp=grid::gpar(fontsize=20))
 
     print(grid.arrange(arrangeGrob(titlegrob,
                                    arrangeGrob(pval, randeff, heights = c(1,1), widths = c(1,2), ncol = 2),
