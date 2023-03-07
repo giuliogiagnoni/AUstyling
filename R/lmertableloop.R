@@ -3,12 +3,14 @@
 #' @param d a data frame.
 #' @param m a lmer model i.e "tr + p + (1|a)" or "tr * p + (1|a)".
 #' @param ivm indepent variable of the model to compute the emmeans i.e. "tr" or c("tr","p")
-#' @param ivm indepent variable of the model to compute the p-values i.e. "tr" or c("tr","p", "tr:p")
+#' @param ivm indepent variable of the model to compute the p-values i.e. "tr" or c("tr","p", "tr:p"). 
+#'   Important, when interaction between 2 or more variables, they have to be in the order they are displayed in the anova function,
 #' @param dv a vector with the dependent variable of interest i.e c("var1","var2","var3")
 #' @param p significant digits of p-values.
 #'  empty:  will round the number to 3 decimals.
 #'  "full": will leave all the digits.
-#'  "std1": will round to 2 digits, or print <0.01 or <0.001.
+#'  "std1": will round to 2 digits, if above 0.01, or 3, if above 0.001, otherwise if will print <0.001.
+#'  "std2": will round to 2 digits, or print <0.01 or <0.001.
 #' @param s significant digits of least square means.
 #'  empty:  will round the number to 3 decimals.
 #'  number 1 to 6: will return the desired significant digits.
@@ -16,19 +18,20 @@
 #' @param con the list of contrast... need to specify 1 independent variable.
 #' @param ivc independent variable of the model to computer the contrasts
 #' @param let TRUE if you want to include the letter of the tuckey's test difference next to the least square means.
+#' @param aov select number 1, 2, or 3, for the anova type
 #'
 #' @return A data frame with variable names, least square means (emmeans), maximim SEM, p-values, and p-values of contrasts.
 #'
 #' @export
 #'
-lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE){
+lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
 
   DATA <- NULL
   DATAletters <- NULL
-
+  
   for (i in dv) {
     lmer_results <- lmer(as.formula(paste(i, m, sep = "~")), d)
-    pval <- as.data.frame(anova(lmer_results, type = 3))
+    pval <- as.data.frame(anova(lmer_results, type =  if(missing(aov)){2}else{aov})) 
     pval <- pval %>% dplyr::filter(row.names(pval) %in% ivp) %>%
       dplyr::select("Pr(>F)") %>%
       dplyr::rename("P" = "Pr(>F)")
