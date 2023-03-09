@@ -48,6 +48,7 @@ lmerdiagnostic <- function(d, m, iv, dv){
     plotnorm <- ggplot() +
       geom_point(outlierqqplot, mapping = aes(x = x, y = y), size = 2,color = "black") +
       geom_text(outlierqqplot, mapping = aes(x = x, y = y, label = out), na.rm = TRUE, hjust = -0.3) +
+      geom_qq_line(outlierqqplot, mapping = aes(sample = y)) +
       labs(x = "Theoretical quantiles", y = "Sample quantiles") +
       theme_au_bw_col()
 
