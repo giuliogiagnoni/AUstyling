@@ -58,7 +58,7 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
 
     DATAletters <- if(missing(let) | let == FALSE){ NULL }
     else if (let == TRUE & length(ivm) == 1){
-      dataletters <- as.data.frame(multcomp::cld(emmbase, Letters = letters, sort = FALSE))
+      dataletters <- as.data.frame(multcomp::cld(emmbase, Letters = letters))
       dataletters$.group <- as.character(gsub(" ", "", dataletters$.group))
       # dataletters <- dataletters %>% arrange(!!rlang::sym(ivm))
 
@@ -67,7 +67,7 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
 
       rbind(dataletters1, DATAletters) }
     else if (let == TRUE & length(ivm) > 1){
-      dataletters <- as.data.frame(multcomp::cld(emmbase, Letters = letters, sort = FALSE))
+      dataletters <- as.data.frame(multcomp::cld(emmbase, Letters = letters))
       dataletters$var <-  apply( dataletters[,ivm], 1, paste, collapse = "-")
       dataletters$.group <- as.character(gsub(" ", "", dataletters$.group))
       # dataletters <- dataletters %>% arrange(!!!rlang::syms(ivm))
