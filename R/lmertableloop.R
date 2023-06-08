@@ -24,7 +24,7 @@
 #'
 #' @export
 #'
-lmertableloop2 <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
+lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
   
   DATA <- NULL
   DATAletters <- NULL
