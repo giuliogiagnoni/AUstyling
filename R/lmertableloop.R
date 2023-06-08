@@ -24,8 +24,8 @@
 #'
 #' @export
 #'
-lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
-
+lmertableloop2 <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
+  
   DATA <- NULL
   DATAletters <- NULL
   
@@ -36,49 +36,51 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
       dplyr::select("Pr(>F)") %>%
       dplyr::rename("P" = "Pr(>F)")
     pval <- t(pval)
-
+    
     # unique(sub("\\*", ":", c(ivp, paste(ivp, collapse = "*"))))
-
+    
     emmbase <- eval(parse(text = paste("emmeans(lmer_results, ~", paste(ivm, collapse = "*"), ")")))
-
+    
     line <- if(missing(con) | missing(ivc)){ NULL }
     else{
       emmbasecon <- eval(parse(text = paste("emmeans(lmer_results, ~", ivc, ")")))
     }
-
+    
     emm <- t(as.data.frame(emmbase))
     colnames(emm) <-  as.data.frame(emm) %>% dplyr::filter(row.names(emm) %in% ivm) %>%
-                      summarise_all(~ paste(., collapse = "-"))
+      summarise_all(~ paste(., collapse = "-"))
     emm <-  as.data.frame(emm) %>% dplyr::filter(!row.names(emm) %in% ivm)
-
+    
     emm <- as.data.frame(sapply(emm, as.numeric))
     SEM <- max(emm[2,])
-
+    
     emmc <- emm[1,]
-
+    
     DATAletters <- if(missing(let) | let == FALSE){ NULL }
     else if (let == TRUE & length(ivm) == 1){
       dataletters <- as.data.frame(multcomp::cld(emmbase, Letters = letters))
       dataletters$.group <- as.character(gsub(" ", "", dataletters$.group))
-      dataletters <- dataletters %>% arrange(!!rlang::sym(rev(ivm)))
-
-      dataletters1 <- rbind(dataletters$.group)
-      colnames(dataletters1) <- dataletters[[ivm]]
+      dataletters <- t(as.data.frame(dataletters))
+      colnames(dataletters) <-  as.data.frame(dataletters) %>% dplyr::filter(row.names(dataletters) %in% ivm) %>%
+        summarise_all(~ paste(., collapse = "-"))
+      dataletters <-  as.data.frame(dataletters) %>% dplyr::filter(row.names(dataletters) %in% ".group")
+      dataletters1 <- dataletters
 
       rbind(dataletters1, DATAletters) }
     else if (let == TRUE & length(ivm) > 1){
+      
       dataletters <- as.data.frame(multcomp::cld(emmbase, Letters = letters))
-      dataletters$var <-  apply( dataletters[,ivm], 1, paste, collapse = "-")
       dataletters$.group <- as.character(gsub(" ", "", dataletters$.group))
-      dataletters <- dataletters %>% arrange(!!!rlang::syms(rev(ivm)))
-
-      dataletters1 <- rbind(dataletters$.group)
-      colnames(dataletters1) <- dataletters$var
+      dataletters <- t(as.data.frame(dataletters))
+      colnames(dataletters) <-  as.data.frame(dataletters) %>% dplyr::filter(row.names(dataletters) %in% ivm) %>%
+        summarise_all(~ paste(., collapse = "-"))
+      dataletters <-  as.data.frame(dataletters) %>% dplyr::filter(row.names(dataletters) %in% ".group")
+      dataletters1 <- dataletters
 
       rbind(dataletters1, DATAletters) }
     else { stop(sQuote(s), " not implemented") }
-
-
+    
+    
     line <- if(missing(con)){
       cbind(Response = i ,cbind(emmc, SEM, pval))
     }
@@ -92,42 +94,42 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
       cont <- as.data.frame(t(cont))
       cbind(Response = i ,cbind(emmc, SEM, pval, cont))
     }
-
+    
     DATA <- rbind(line, DATA)
-
+    
   }
-
+  
   pvalcol <- if(missing(con) | missing(ivc)){
     ivp
   }
   else{
     c(ivp, colnames(cont))
   }
-
-
+  
+  
   # significant digits p values
-
+  
   DATA[, pvalcol] <-  if(missing(p)){
     round(DATA[, pvalcol], 3)
   }
   else if (p == 'full'){
     DATA[, pvalcol]
   }
-   else if (p == 'std1'){
+  else if (p == 'std1'){
     sapply(DATA[, pvalcol],
            function(x) ifelse(x >= 0.01, round(x, digits = 2), ifelse(x < 0.001, "<0.001",
-                                                   ifelse(x < 0.01 & x >= 0.001, round(x, digits = 3), as.character(x) ))))
+                                                                      ifelse(x < 0.01 & x >= 0.001, round(x, digits = 3), as.character(x) ))))
   }
   else if (p == 'std2'){
     sapply(DATA[, pvalcol],
            function(x) ifelse(x >= 0.01, round(x, digits = 2), ifelse(x < 0.001, "<0.001",
-                                                   ifelse(x < 0.01 & x >= 0.001, "<0.01", as.character(x) ))))
+                                                                      ifelse(x < 0.01 & x >= 0.001, "<0.01", as.character(x) ))))
   } else {
     stop(sQuote(p), " not implemented")
   }
-
+  
   # significant digits means
-
+  
   DATA[, colnames(emmc)] <-  if(missing(s)){
     round(DATA[, colnames(emmc)], 3)
   }
@@ -141,9 +143,9 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
   else {
     stop(sQuote(s), " not implemented")
   }
-
+  
   # significant digits se
-
+  
   DATA[, "SEM"] <-  if(missing(s)){
     round(DATA[, "SEM"], 2)
   }
@@ -156,18 +158,16 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
   } else {
     stop(sQuote(s), " not implemented")
   }
-
-
-DATAletters <- as.data.frame(DATAletters)
-
-DATAletters <-  DATAletters %>% dplyr::select(!!!rlang::syms(colnames(emm)))
-           
+  
+  
+  DATAletters <- as.data.frame(DATAletters)
+  
+ DATAletters <-  DATAletters %>% dplyr::select(!!!rlang::syms(colnames(emmc)))
+  
   if(missing(let) | let == FALSE){ DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)] <-  DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)] }
   else if (let == TRUE){ DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)] <- paste(as.matrix(DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)]),
-           as.matrix(DATAletters), sep = "") }
+                                                                             as.matrix(DATAletters), sep = "") }
   else { stop(sQuote(s), " not implemented") }
-
-   return(DATA)
+  
+  return(DATA)
 }
-
-
