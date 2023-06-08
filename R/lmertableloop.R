@@ -160,6 +160,8 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
 
 DATAletters <- as.data.frame(DATAletters)
 
+DATAletters <-  DATAletters %>% dplyr::select(!!!rlang::syms(colnames(emm)))
+           
   if(missing(let) | let == FALSE){ DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)] <-  DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)] }
   else if (let == TRUE){ DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)] <- paste(as.matrix(DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)]),
            as.matrix(DATAletters), sep = "") }
