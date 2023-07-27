@@ -3,7 +3,7 @@
 #' @param d a data frame.
 #' @param m a lmer model i.e "tr + p + (1|a)" or "tr * p + (1|a)".
 #' @param ivm indepent variable of the model to compute the emmeans i.e. "tr" or c("tr","p")
-#' @param ivm indepent variable of the model to compute the p-values i.e. "tr" or c("tr","p", "tr:p"). 
+#' @param ivm indepent variable of the model to compute the p-values i.e. "tr" or c("tr","p", "tr:p").
 #'   Important, when interaction between 2 or more variables, they have to be in the order they are displayed in the anova function,
 #' @param dv a vector with the dependent variable of interest i.e c("var1","var2","var3")
 #' @param p significant digits of p-values.
@@ -25,37 +25,37 @@
 #' @export
 #'
 lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
-  
+
   DATA <- NULL
   DATAletters <- NULL
-  
+
   for (i in dv) {
-    lmer_results <- lmer(as.formula(paste(i, m, sep = "~")), d)
-    pval <- as.data.frame(anova(lmer_results, type =  if(missing(aov)){2}else{aov})) 
+    lmer_results <- eval(parse(text = paste("lmer(",m, ",",d,")")))
+    pval <- as.data.frame(anova(lmer_results, type =  if(missing(aov)){2}else{aov}))
     pval <- pval %>% dplyr::filter(row.names(pval) %in% ivp) %>%
       dplyr::select("Pr(>F)") %>%
       dplyr::rename("P" = "Pr(>F)")
     pval <- t(pval)
-    
+
     # unique(sub("\\*", ":", c(ivp, paste(ivp, collapse = "*"))))
-    
+
     emmbase <- eval(parse(text = paste("emmeans(lmer_results, ~", paste(ivm, collapse = "*"), ")")))
-    
+
     line <- if(missing(con) | missing(ivc)){ NULL }
     else{
       emmbasecon <- eval(parse(text = paste("emmeans(lmer_results, ~", ivc, ")")))
     }
-    
+
     emm <- t(as.data.frame(emmbase))
     colnames(emm) <-  as.data.frame(emm) %>% dplyr::filter(row.names(emm) %in% ivm) %>%
       summarise_all(~ paste(., collapse = "-"))
     emm <-  as.data.frame(emm) %>% dplyr::filter(!row.names(emm) %in% ivm)
-    
+
     emm <- as.data.frame(sapply(emm, as.numeric))
     SEM <- max(emm[2,])
-    
+
     emmc <- emm[1,]
-    
+
     DATAletters <- if(missing(let) | let == FALSE){ NULL }
     else if (let == TRUE & length(ivm) == 1){
       dataletters <- as.data.frame(multcomp::cld(emmbase, Letters = letters))
@@ -68,7 +68,7 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
 
       rbind(dataletters1, DATAletters) }
     else if (let == TRUE & length(ivm) > 1){
-      
+
       dataletters <- as.data.frame(multcomp::cld(emmbase, Letters = letters))
       dataletters$.group <- as.character(gsub(" ", "", dataletters$.group))
       dataletters <- t(as.data.frame(dataletters))
@@ -79,8 +79,8 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
 
       rbind(dataletters1, DATAletters) }
     else { stop(sQuote(s), " not implemented") }
-    
-    
+
+
     line <- if(missing(con)){
       cbind(Response = i ,cbind(emmc, SEM, pval))
     }
@@ -94,21 +94,21 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
       cont <- as.data.frame(t(cont))
       cbind(Response = i ,cbind(emmc, SEM, pval, cont))
     }
-    
+
     DATA <- rbind(line, DATA)
-    
+
   }
-  
+
   pvalcol <- if(missing(con) | missing(ivc)){
     ivp
   }
   else{
     c(ivp, colnames(cont))
   }
-  
-  
+
+
   # significant digits p values
-  
+
   DATA[, pvalcol] <-  if(missing(p)){
     round(DATA[, pvalcol], 3)
   }
@@ -127,9 +127,9 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
   } else {
     stop(sQuote(p), " not implemented")
   }
-  
+
   # significant digits means
-  
+
   DATA[, colnames(emmc)] <-  if(missing(s)){
     round(DATA[, colnames(emmc)], 3)
   }
@@ -143,9 +143,9 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
   else {
     stop(sQuote(s), " not implemented")
   }
-  
+
   # significant digits se
-  
+
   DATA[, "SEM"] <-  if(missing(s)){
     round(DATA[, "SEM"], 2)
   }
@@ -158,16 +158,16 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
   } else {
     stop(sQuote(s), " not implemented")
   }
-  
-  
+
+
   DATAletters <- as.data.frame(DATAletters)
-  
+
  DATAletters <-  DATAletters %>% dplyr::select(!!!rlang::syms(colnames(emmc)))
-  
+
   if(missing(let) | let == FALSE){ DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)] <-  DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)] }
   else if (let == TRUE){ DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)] <- paste(as.matrix(DATA[1:nrow(DATA),2:(ncol(DATAletters)+1)]),
                                                                              as.matrix(DATAletters), sep = "") }
   else { stop(sQuote(s), " not implemented") }
-  
+
   return(DATA)
 }
