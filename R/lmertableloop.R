@@ -30,7 +30,7 @@ lmertableloop <- function(d, m, ivm, ivp, dv, p, s, con, ivc, let = TRUE, aov){
   DATAletters <- NULL
 
   for (i in dv) {
-    lmer_results <- eval(parse(text = paste("lmer(",m, ",",d,")")))
+    lmer_results <- eval(parse(text = paste("lmer(", i, "~", m, ",", deparse(substitute(d)), ")")))
     pval <- as.data.frame(anova(lmer_results, type =  if(missing(aov)){2}else{aov}))
     pval <- pval %>% dplyr::filter(row.names(pval) %in% ivp) %>%
       dplyr::select("Pr(>F)") %>%
